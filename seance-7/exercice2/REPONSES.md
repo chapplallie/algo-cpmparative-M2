@@ -21,7 +21,7 @@ contient 30 : oui
 liberee
 ```
 
-C'est bien la sortie attendue. Les valeurs sont à l'envers (50 en premier) parce que `liste_inserer` ajoute en tête.
+C'est la sortie attendue. Les valeurs sont à l'envers (50 en premier) parce que `liste_inserer` ajoute en tête.
 
 ## Questions
 
