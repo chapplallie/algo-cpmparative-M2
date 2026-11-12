@@ -117,3 +117,82 @@ void hash_free(void)
         hash_table[i] = NULL;
     }
 }
+
+
+//3
+
+// static User *sorted_tab = NULL;
+// static int   sorted_size = 0;
+// static int   sorted_capacity = 0;
+ 
+// static int sorted_position(const char *email)
+// {
+//     int low = 0, high = sorted_size;
+//     while (low < high) {
+//         int mid = low + (high - low) / 2;
+//         if (strcmp(sorted_tab[mid].email, email) < 0)
+//             low = mid + 1;
+//         else
+//             high = mid;
+//     }
+//     return low;
+
+// }
+
+
+/* Programme principal : verification + comparaison des temps */
+
+static void make_email(char *buf, int i)
+{
+    snprintf(buf, EMAIL_MAX, "user%d@mail.com", i);
+}
+
+int main(int argc, char *argv[])
+{
+    int n = (argc > 1) ? atoi(argv[1]) : 50000;   /* nombre d'utilisateurs */
+    int q = (argc > 2) ? atoi(argv[2]) : 2000;    /* nombre de recherches */
+    char buf[EMAIL_MAX];
+
+    /* Cas limite : annuaire vide */
+    printf("Annuaire vide : seq=%d hash=%d\n",
+           seq_search("a@b.fr"), hash_search("a@b.fr"));
+
+    /* Remplissage des deux structures */
+    for (int i = 0; i < n; i++) {
+        make_email(buf, i);
+        seq_insert(buf, i);
+        hash_insert(buf, i);
+    }
+
+    /* Verification : premier, dernier, absent */
+    char last[EMAIL_MAX];
+    make_email(last, n - 1);
+    const char *tests[] = { "user0@mail.com", last, "inconnu@mail.com" };
+    for (int k = 0; k < 3; k++)
+        printf("%-22s seq=%d hash=%d\n",
+               tests[k], seq_search(tests[k]), hash_search(tests[k]));
+
+    /* Mesure des temps de recherche */
+    int found_seq = 0, found_hash = 0;
+    clock_t start = clock();
+    for (int i = 0; i < q; i++) {
+        make_email(buf, (int)(((long long)i * 7919) % n));
+        found_seq += seq_search(buf);
+    }
+    double t_seq = (double)(clock() - start) / CLOCKS_PER_SEC;
+
+    start = clock();
+    for (int i = 0; i < q; i++) {
+        make_email(buf, (int)(((long long)i * 7919) % n));
+        found_hash += hash_search(buf);
+    }
+    double t_hash = (double)(clock() - start) / CLOCKS_PER_SEC;
+
+    printf("\n%d recherches sur %d utilisateurs :\n", q, n);
+    printf("  Sequentiel : %.4f s (%d trouves)\n", t_seq, found_seq);
+    printf("  Hachage    : %.4f s (%d trouves)\n", t_hash, found_hash);
+
+    seq_free();
+    hash_free();
+    return 0;
+}
