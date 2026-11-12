@@ -5,6 +5,7 @@
 #include <time.h>
 
 #define EMAIL_MAX 100
+#define TABLE_SIZE 100003 
 
 typedef struct {
     char email[EMAIL_MAX];
@@ -59,4 +60,60 @@ void seq_free(void)
     free(seq_tab);
     seq_tab = NULL;
     seq_size = seq_capacity = 0;
+}
+  
+typedef struct Node {
+    char email[EMAIL_MAX];
+    int  id;
+    struct Node *next;
+} Node;
+ 
+static Node *hash_table[TABLE_SIZE];   
+ 
+/* Fonction de hachage djb2 (Dan Bernstein) */
+static unsigned long hash_function(const char *str)
+{
+    unsigned long h = 5381;
+    int c;
+    while ((c = (unsigned char)*str++) != 0)
+        h = h * 33 + (unsigned long)c;
+    return h % TABLE_SIZE;
+}
+ 
+void hash_insert(const char *email, int id)
+{
+    Node *n = malloc(sizeof(Node));
+    if (n == NULL) {
+        fprintf(stderr, "Erreur : memoire insuffisante (malloc)\n");
+        exit(EXIT_FAILURE);
+    }
+    copy_email(n->email, email);
+    n->id = id;
+    unsigned long idx = hash_function(email);
+    n->next = hash_table[idx];
+    hash_table[idx] = n;
+}
+ 
+bool hash_search(const char *email)
+{
+    Node *cur = hash_table[hash_function(email)];
+    while (cur != NULL) {                        /* case vide : NULL */
+        if (strcmp(cur->email, email) == 0)
+            return true;
+        cur = cur->next;
+    }
+    return false;
+}
+ 
+void hash_free(void)
+{
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        Node *cur = hash_table[i];
+        while (cur != NULL) {
+            Node *next = cur->next;
+            free(cur);
+            cur = next;
+        }
+        hash_table[i] = NULL;
+    }
 }
