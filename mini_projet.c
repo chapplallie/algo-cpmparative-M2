@@ -140,7 +140,9 @@ void hash_free(void)
 // }
 
 
-/* Programme principal : verification + comparaison des temps */
+
+
+
 
 static void make_email(char *buf, int i)
 {
